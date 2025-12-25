@@ -4,7 +4,7 @@ This crate provides an API for interpolating between values in [gpui](https://ww
 
 Transitions can be constructed via `window.use_transition` or `window.use_keyed_transition`. It's very similar to the `use_state` API.
 ```rs
-let mut my_transition = window
+let my_transition = window
     .use_keyed_transition(
         "my_transition",
         cx,
@@ -17,7 +17,7 @@ let mut my_transition = window
 
 They can also be constructed more granularly via `Transition::new`:
 ```rs
-let mut my_transition = Transition::new(
+let my_transition = Transition::new(
     cx.new(|_cx| TransitionState::new(rgb(0xFF0000))),
     Duration::from_millis(400),
 );

@@ -1,5 +1,6 @@
 use std::{
     borrow::BorrowMut,
+    cell::{Ref, RefCell},
     rc::Rc,
     time::{Duration, Instant},
 };
@@ -37,7 +38,7 @@ pub struct Transition<T: Lerp + Clone + PartialEq + 'static> {
     state: Entity<TransitionState<T>>,
 
     /// A cached version of the transition's value.
-    cached_value: Option<T>,
+    cached_value: RefCell<Option<T>>,
 }
 
 impl<T: Lerp + Clone + PartialEq + 'static> Transition<T> {
@@ -47,7 +48,7 @@ impl<T: Lerp + Clone + PartialEq + 'static> Transition<T> {
             duration_secs: duration.as_secs_f32(),
             easing: Rc::new(linear),
             state,
-            cached_value: None,
+            cached_value: RefCell::new(None),
         }
     }
 
@@ -89,20 +90,18 @@ impl<T: Lerp + Clone + PartialEq + 'static> Transition<T> {
     }
 
     /// Evaluates the current value of the transition.
-    pub fn evaluate(&mut self, window: &mut Window, cx: &mut App) -> &T {
-        if self.cached_value.is_none() {
+    pub fn evaluate(&self, window: &mut Window, cx: &mut App) -> Ref<'_, T> {
+        if self.cached_value.borrow().is_none() {
             let (in_progress, evaluated_value) = self.raw_evaluate(cx);
 
             if in_progress {
                 window.request_animation_frame();
             }
 
-            self.cached_value = Some(evaluated_value);
+            *self.cached_value.borrow_mut() = Some(evaluated_value);
         }
 
-        // We know the cached version exists
-        // so it should be safe to unwrap it.
-        self.cached_value.as_ref().unwrap()
+        Ref::map(self.cached_value.borrow(), |opt| opt.as_ref().unwrap())
     }
 
     /// Reads the end goal of the transitions.
@@ -111,8 +110,8 @@ impl<T: Lerp + Clone + PartialEq + 'static> Transition<T> {
     }
 
     /// Reads the current value of the cached transition, if it exists.
-    pub fn read_cache(&self) -> Option<&T> {
-        self.cached_value.as_ref()
+    pub fn read_cache(&self) -> Ref<'_, Option<T>> {
+        self.cached_value.borrow()
     }
 
     /// Evaluates the current delta of the transition.

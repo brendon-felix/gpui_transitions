@@ -36,7 +36,7 @@ impl RenderOnce for Button {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         const HOVER_STRENGTH: f32 = 0.3;
 
-        let mut base_color_transition = window
+        let base_color_transition = window
             .use_keyed_transition(
                 self.id.with_suffix("color"),
                 cx,
@@ -45,7 +45,7 @@ impl RenderOnce for Button {
             )
             .with_easing(ease_out_quint());
 
-        let mut hover_transition = window
+        let hover_transition = window
             .use_keyed_transition(
                 self.id.with_suffix("hover"),
                 cx,
@@ -206,7 +206,7 @@ fn rgba_to_hsla(rgba: &Rgba) -> Hsla {
 }
 
 /// A simple wrapper around Rgba that implements a more perceptual lerp via Oklab.
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Copy)]
 struct Oklab(Rgba);
 
 impl Lerp for Oklab {
