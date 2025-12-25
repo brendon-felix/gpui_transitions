@@ -6,7 +6,7 @@ use gpui::{
     TitlebarOptions, Window, WindowBounds, WindowOptions, div, ease_in_out, ease_out_quint, point,
     prelude::*, px, rgb, size,
 };
-use gpui_transitions::{Lerp, Transition, TransitionState, WindowUseTransition};
+use gpui_transitions::{Lerp, WindowUseTransition};
 use palette::{FromColor, Hsl, IntoColor, Mix, Srgb};
 use rand::Rng;
 use smallvec::SmallVec;
