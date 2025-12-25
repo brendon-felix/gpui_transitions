@@ -2,7 +2,6 @@
 
 This crate provides an API for interpolating between values in [gpui](https://www.gpui.rs).
 
-
 Transitions can be constructed via `window.use_transition` or `window.use_keyed_transition`. It's very similar to the `use_state` API.
 ```rs
 let mut my_transition = window
@@ -34,6 +33,16 @@ let value = my_transition.evaluate(window, cx);
 
 If the transition is not finished when `evaluate` is called then an animation frame will be requested.
 
+<br>
+
+Updating the transition's goal is identical to updating state:
+```rs
+my_transition.update(cx, |this, cx| {
+    *this = rgb(0x00FF00);
+    cx.notify();
+});
+```
+
 - - -
 
-More examples can be found [here](/).
+Examples can be found [here](https://github.com/astrum-chat/gpui_transitions/tree/main/examples).
