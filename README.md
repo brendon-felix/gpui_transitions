@@ -1,4 +1,4 @@
-# gpui-transitions.
+# gpui_transitions.
 
 This crate provides an API for interpolating between values in [gpui](https://www.gpui.rs).
 
