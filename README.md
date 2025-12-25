@@ -25,7 +25,7 @@ let my_transition = Transition::new(
 
 <br>
 
-To get the value of a transition you can use `evaluate`:
+To get the value of a transition you can use `evaluate`. This is the equivilant of `use_state`'s `read` method.
 
 ```rs
 let value = my_transition.evaluate(window, cx);
