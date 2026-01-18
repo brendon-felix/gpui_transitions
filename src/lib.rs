@@ -16,6 +16,9 @@ pub use window::WindowUseTransition;
 mod state;
 pub use state::TransitionState;
 
+mod bool_lerp;
+pub use bool_lerp::*;
+
 /// A transition that can be applied to an element.
 #[derive(Clone)]
 pub struct Transition<T: Lerp + Clone + PartialEq + 'static> {

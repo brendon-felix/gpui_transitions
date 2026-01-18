@@ -8,6 +8,8 @@ use gpui::{
     colors::Colors, px,
 };
 
+use crate::BoolLerp;
+
 /// A value which can be interpolated with another value of the same type.
 pub trait Lerp {
     /// Defines how a value is calculated from the start and end goal.
@@ -98,6 +100,12 @@ tuple_struct_lerps!(Radians(f32), Percentage(f32), DevicePixels(i32), Rems(f32))
 impl Lerp for Pixels {
     fn lerp(&self, to: &Self, delta: f32) -> Self {
         px((self.to_f64() as f32).lerp(&(to.to_f64() as f32), delta))
+    }
+}
+
+impl<N: Lerp + Copy + PartialOrd + From<u8>> Lerp for BoolLerp<N> {
+    fn lerp(&self, to: &Self, delta: f32) -> Self {
+        BoolLerp::new(self.value().lerp(&to.value(), delta))
     }
 }
 
