@@ -1,3 +1,5 @@
+use std::ops::Sub;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct BoolLerp<N> {
     value: N,
@@ -17,7 +19,7 @@ impl<N> BoolLerp<N>
 where
     N: PartialOrd + From<u8>,
 {
-    pub fn new(n: N) -> Self {
+    pub(crate) fn new(n: N) -> Self {
         debug_assert!(
             n >= N::from(0) && n <= N::from(1),
             "intermediate value must be between 0 and 1"
@@ -33,8 +35,18 @@ impl<N: Copy> BoolLerp<N> {
     }
 }
 
-impl<N: PartialOrd + From<u8>> Into<BoolLerp<N>> for bool {
+impl<N: Copy + From<u8> + Sub<Output = N>> BoolLerp<N> {
+    pub fn toggle(&self) -> Self {
+        BoolLerp {
+            value: N::from(1) - self.value(),
+        }
+    }
+}
+
+impl<N: From<u8>> Into<BoolLerp<N>> for bool {
     fn into(self) -> BoolLerp<N> {
-        BoolLerp::new(N::from(self as u8))
+        BoolLerp {
+            value: N::from(self as u8),
+        }
     }
 }
