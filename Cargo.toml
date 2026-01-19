@@ -1,11 +1,14 @@
 [package]
 name = "gpui_transitions"
-version = "0.1.4"
+version = "0.1.5"
 authors = [ "cameronpcampbell" ]
 edition = "2024"
 description = "provides an API for interpolating between values in GPUI."
 license = "MIT"
 homepage = "https://github.com/astrum-chat/gpui_transitions"
+
+[features]
+test-support = ["gpui/test-support"]
 
 [dependencies]
 gpui = "0.2.2"
