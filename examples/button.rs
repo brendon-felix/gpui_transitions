@@ -1,15 +1,16 @@
 use std::time::Duration;
 
-use element_id_ext::ElementIdExt;
 use gpui::{
-    AnyElement, App, AppContext, Application, Bounds, Context, ElementId, Fill, Hsla, Menu, Rgba,
-    TitlebarOptions, Window, WindowBounds, WindowOptions, div, ease_in_out, ease_out_quint, point,
-    prelude::*, px, rgb, size,
+    AnyElement, App, AppContext, Application, Bounds, Context, ElementId, Fill, Hsla, KeyBinding,
+    Menu, Rgba, TitlebarOptions, Window, WindowBounds, WindowOptions, actions, div, ease_in_out,
+    ease_out_quint, point, prelude::*, px, rgb, size,
 };
 use gpui_transitions::{Lerp, WindowUseTransition};
 use palette::{FromColor, Hsl, IntoColor, Mix, Srgb};
 use rand::Rng;
 use smallvec::SmallVec;
+
+actions!(app, [Quit]);
 
 #[derive(IntoElement)]
 struct Button {
@@ -38,7 +39,7 @@ impl RenderOnce for Button {
 
         let base_color_transition = window
             .use_keyed_transition(
-                self.id.with_suffix("color"),
+                (self.id.clone(), "color"),
                 cx,
                 Duration::from_millis(1000),
                 |_window, _cx| Oklab(random_pastel_hex(None)),
@@ -47,7 +48,7 @@ impl RenderOnce for Button {
 
         let hover_transition = window
             .use_keyed_transition(
-                self.id.with_suffix("hover"),
+                (self.id.clone(), "hover"),
                 cx,
                 Duration::from_millis(300),
                 |_window, _cx| 0.,
@@ -72,7 +73,8 @@ impl RenderOnce for Button {
             .children(self.children)
             .on_click(move |_event, _window, cx| {
                 base_color_transition.update(cx, |this, cx| {
-                    *this = Oklab(random_pastel_hex(Some(rgba_to_hsla(&this.0).h)));
+                    let hsla: Hsla = this.0.into();
+                    *this = Oklab(random_pastel_hex(Some(hsla.h)));
                     cx.notify();
                 });
             })
@@ -125,22 +127,16 @@ fn main() {
         )
         .unwrap();
 
+        cx.on_action(|_: &Quit, cx: &mut App| cx.quit());
+        cx.bind_keys([
+            #[cfg(target_os = "macos")]
+            KeyBinding::new("cmd-q", Quit, None),
+            KeyBinding::new("alt-f4", Quit, None),
+        ]);
+        cx.on_window_closed(|cx| cx.quit()).detach();
+
         cx.activate(true);
     });
-}
-
-mod element_id_ext {
-    use gpui::{ElementId, SharedString};
-
-    pub trait ElementIdExt {
-        fn with_suffix(&self, suffix: impl Into<SharedString>) -> ElementId;
-    }
-
-    impl ElementIdExt for ElementId {
-        fn with_suffix(&self, suffix: impl Into<SharedString>) -> ElementId {
-            ElementId::NamedChild(Box::new(self.clone()), suffix.into())
-        }
-    }
 }
 
 fn random_pastel_hex(prev_hue: Option<f32>) -> Rgba {
@@ -166,43 +162,6 @@ fn random_pastel_hex(prev_hue: Option<f32>) -> Rgba {
     let hex = ((rgb_u8.red as u32) << 16) | ((rgb_u8.green as u32) << 8) | (rgb_u8.blue as u32);
 
     rgb(hex)
-}
-
-fn rgba_to_hsla(rgba: &Rgba) -> Hsla {
-    let red = rgba.r as f32 / 255.0;
-    let green = rgba.g as f32 / 255.0;
-    let blue = rgba.b as f32 / 255.0;
-    let alpha = rgba.a as f32 / 255.0;
-
-    let max = red.max(green.max(blue));
-    let min = red.min(green.min(blue));
-    let delta = max - min;
-
-    let lightness = (max + min) / 2.0;
-
-    let saturation = if delta == 0.0 {
-        0.0
-    } else {
-        delta / (1.0 - (2.0 * lightness - 1.0).abs())
-    };
-
-    let hue = if delta == 0.0 {
-        0.0
-    } else if max == red {
-        60.0 * (((green - blue) / delta) % 6.0)
-    } else if max == green {
-        60.0 * (((blue - red) / delta) + 2.0)
-    } else {
-        60.0 * (((red - green) / delta) + 4.0)
-    };
-    let hue = if hue < 0.0 { hue + 360.0 } else { hue };
-
-    Hsla {
-        h: hue,
-        s: saturation,
-        l: lightness,
-        a: alpha,
-    }
 }
 
 /// A simple wrapper around Rgba that implements a more perceptual lerp via Oklab.
